@@ -25,30 +25,20 @@ public class Main {
         // Create spark conf
         SparkConf sparkConf = new SparkConf()
                 .setAppName("mySparkApp")
-                .setMaster("local[*]"); // Run on local with all(*) available cores
+                .setMaster("local[*]");
 
-        // Connection to spark cluster
+        // Connect to spark
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
-        // Load data into spark. JavaRDD communicates Scala RDD
-        JavaRDD<Integer> myRdd =  sc.parallelize(inputData);
-        System.out.println(myRdd.collect());
+        // Generate RDD from the input data
+        JavaRDD<Integer> originalIntegers = sc.parallelize(inputData);
 
-        // Mapping function and return different type
-        JavaRDD<Double> sqrtRdd = myRdd.map(Math::sqrt);
-        //sqrtRdd.foreach(System.out::println);   // This can throw NotSerializableException
-        // The function passed has to be serialized to multiple nodes. For single CPU this will work
+        // Let's say we want to have values together across different rdds
+        // original list: (2,4) mapping for sqrt results (1.414, 2)
+        // Let's say you want ((2, 1.414), (4,2)) each item is a custom object
+        JavaRDD<MySqrtObject> mySqrRdd = originalIntegers.map(x -> new MySqrtObject(x));
+        mySqrRdd.collect().forEach(System.out::println);
 
-        // Convert RDD to Java collection using collect() and
-        // now the function is not to be serialized since it's running on local
-        sqrtRdd.collect().forEach(System.out::println);
-
-        // how many elements in result rdd
-        // using just map and reduce
-        JavaRDD<Integer> resultRDD = sqrtRdd.map(x -> 1);
-        System.out.println("Total elements: " + resultRDD.reduce((x,y) -> x+y));
-
-        // Close the connection to spark
-        sc.close();
+        // Above can be done by using tuple
     }
 }
