@@ -34,18 +34,10 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
         // load input data into RDD
-        JavaRDD<String> loggingRDD = sc.parallelize(inputData);
-
-        // Initialize the PairRDD to create (key, value)
-        JavaPairRDD<String, Integer> loggingPairedRDD = loggingRDD.mapToPair(logLine -> {
-           String logLevel = logLine.split(":")[0];
-           return new Tuple2<>(logLevel, 1);
-        });
-
-        // Avoid groupByKey since this can cause catastrophic issues on the cluster with resource consumption
-        // More details: https://databricks.gitbooks.io/databricks-spark-knowledge-base/content/best_practices/prefer_reducebykey_over_groupbykey.html
-        JavaPairRDD<String, Integer> resultPairRDD = loggingPairedRDD.reduceByKey((x, y) -> x+y);
-        resultPairRDD.foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));
+        sc.parallelize(inputData)
+                .mapToPair(logLine -> new Tuple2<>(logLine.split(":")[0], 1))
+                .reduceByKey((x, y) -> x+y)
+                .foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));
 
         sc.close();
     }
