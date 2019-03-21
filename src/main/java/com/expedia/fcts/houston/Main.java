@@ -1,5 +1,6 @@
 package com.expedia.fcts.houston;
 
+import com.google.common.collect.Iterables;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -34,10 +35,15 @@ public class Main {
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
         // load input data into RDD
-        sc.parallelize(inputData)
+        /*sc.parallelize(inputData)
                 .mapToPair(logLine -> new Tuple2<>(logLine.split(":")[0], 1))
                 .reduceByKey((x, y) -> x+y)
-                .foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));
+                .foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));*/
+
+        sc.parallelize(inputData)
+                .mapToPair(logLine -> new Tuple2<>(logLine.split(":")[0], 1))
+                .groupByKey()
+                .foreach(tuple -> System.out.println(tuple._1 + "has count " + Iterables.size(tuple._2())));
 
         sc.close();
     }
