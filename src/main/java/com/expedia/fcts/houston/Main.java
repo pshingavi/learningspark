@@ -3,6 +3,7 @@ package com.expedia.fcts.houston;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
@@ -14,11 +15,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-        List<Integer> inputData = new ArrayList<>();
-        inputData.add(35);
-        inputData.add(12);
-        inputData.add(3);
-        inputData.add(4);
+        List<String> inputData = new ArrayList<>();
+        inputData.add("WARN: Tuesday 4 September 0405");
+        inputData.add("ERROR: Tuesday 4 September 0408");
+        inputData.add("FATAL: Wednesday 5 September 0415");
+        inputData.add("ERROR: Friday 7 September 2405");
+        inputData.add("WARN: Saturday 8 September 3405");
 
         // Set logging
         Logger.getLogger("org.apache").setLevel(Level.WARN);
@@ -31,20 +33,20 @@ public class Main {
         // Connect to spark
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
-        // Generate RDD from the input data
-        JavaRDD<Integer> originalIntegers = sc.parallelize(inputData);
+        // load input data into RDD
+        JavaRDD<String> loggingRDD = sc.parallelize(inputData);
 
-        // Let's say we want to have values together across different rdds
-        // original list: (2,4) mapping for sqrt results (1.414, 2)
-        // Let's say you want ((2, 1.414), (4,2)) each item is a custom object
-        JavaRDD<MySqrtObject> mySqrRdd = originalIntegers.map(x -> new MySqrtObject(x));
-        mySqrRdd.collect().forEach(System.out::println);
+        // Initialize the PairRDD to create (key, value)
+        JavaPairRDD<String, Integer> loggingPairedRDD = loggingRDD.mapToPair(logLine -> {
+           String logLevel = logLine.split(":")[0];
+           return new Tuple2<>(logLevel, 1);
+        });
 
-        // Above can be done by using TupleX. See Tuple2 is used from the scala package.
-        // Spark has transitive dependency on scala so we already have the library
-        JavaRDD<Tuple2<Integer, Double>> mySqrtTuple = originalIntegers
-                .map(x -> new Tuple2<>(x, Math.sqrt(x)));
+        // Avoid groupByKey since this can cause catastrophic issues on the cluster with resource consumption
+        // More details: https://databricks.gitbooks.io/databricks-spark-knowledge-base/content/best_practices/prefer_reducebykey_over_groupbykey.html
+        JavaPairRDD<String, Integer> resultPairRDD = loggingPairedRDD.reduceByKey((x, y) -> x+y);
+        resultPairRDD.foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));
 
-        mySqrtTuple.collect().forEach(System.out::println);
+        sc.close();
     }
 }
