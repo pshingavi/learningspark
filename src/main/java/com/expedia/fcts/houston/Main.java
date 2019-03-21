@@ -33,6 +33,12 @@ public class Main {
         // Load data into spark. JavaRDD communicates Scala RDD
         JavaRDD<Double> myRdd =  sc.parallelize(inputData);
         System.out.println(myRdd.collect());
+
+        // Reduce and shuffle
+        // reduce(function<Double, Double, Double>) 2 input params of type Double and return Double
+        System.out.println(myRdd.reduce((x, y) -> x+y));
+
+        // Close the connection to spark
         sc.close();
     }
 }
