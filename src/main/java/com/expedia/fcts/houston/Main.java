@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -34,16 +35,11 @@ public class Main {
         // Connect to spark
         JavaSparkContext sc = new JavaSparkContext(sparkConf);
 
-        // load input data into RDD
-        /*sc.parallelize(inputData)
-                .mapToPair(logLine -> new Tuple2<>(logLine.split(":")[0], 1))
-                .reduceByKey((x, y) -> x+y)
-                .foreach(tuple -> System.out.println(tuple._1 + " has count " + tuple._2));*/
-
         sc.parallelize(inputData)
-                .mapToPair(logLine -> new Tuple2<>(logLine.split(":")[0], 1))
-                .groupByKey()
-                .foreach(tuple -> System.out.println(tuple._1 + "has count " + Iterables.size(tuple._2())));
+                .flatMap(currStr ->
+                Arrays.asList(currStr.split(" ")).iterator())
+                .filter(word -> word.length() > 1)
+                .collect().forEach(System.out::println);
 
         sc.close();
     }
