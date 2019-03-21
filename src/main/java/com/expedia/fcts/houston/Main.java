@@ -42,6 +42,12 @@ public class Main {
         // Convert RDD to Java collection using collect() and
         // now the function is not to be serialized since it's running on local
         sqrtRdd.collect().forEach(System.out::println);
+
+        // how many elements in result rdd
+        // using just map and reduce
+        JavaRDD<Integer> resultRDD = sqrtRdd.map(x -> 1);
+        System.out.println("Total elements: " + resultRDD.reduce((x,y) -> x+y));
+
         // Close the connection to spark
         sc.close();
     }
