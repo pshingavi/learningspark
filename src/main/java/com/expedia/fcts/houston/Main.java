@@ -35,8 +35,13 @@ public class Main {
         System.out.println(myRdd.collect());
 
         // Mapping function and return different type
-        System.out.println(myRdd.map(Math::sqrt).collect());
+        JavaRDD<Double> sqrtRdd = myRdd.map(Math::sqrt);
+        //sqrtRdd.foreach(System.out::println);   // This can throw NotSerializableException
+        // The function passed has to be serialized to multiple nodes. For single CPU this will work
 
+        // Convert RDD to Java collection using collect() and
+        // now the function is not to be serialized since it's running on local
+        sqrtRdd.collect().forEach(System.out::println);
         // Close the connection to spark
         sc.close();
     }
