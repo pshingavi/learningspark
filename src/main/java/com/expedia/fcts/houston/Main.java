@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import scala.Tuple2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,11 @@ public class Main {
         JavaRDD<MySqrtObject> mySqrRdd = originalIntegers.map(x -> new MySqrtObject(x));
         mySqrRdd.collect().forEach(System.out::println);
 
-        // Above can be done by using tuple
+        // Above can be done by using TupleX. See Tuple2 is used from the scala package.
+        // Spark has transitive dependency on scala so we already have the library
+        JavaRDD<Tuple2<Integer, Double>> mySqrtTuple = originalIntegers
+                .map(x -> new Tuple2<>(x, Math.sqrt(x)));
+
+        mySqrtTuple.collect().forEach(System.out::println);
     }
 }
