@@ -39,7 +39,7 @@ public class TestingJoins {
         JavaPairRDD<Integer, Integer> visitsRDD = sc.parallelizePairs(visitsRaw);
         JavaPairRDD<Integer, String > usersRDD = sc.parallelizePairs(usersRaw);
 
-        // Use spark Optional and leftOuterJoin
+        // Use spark Optional and rightOuterJoin
         JavaPairRDD<Integer, Tuple2<Optional<Integer>, String>> resultRDD = visitsRDD.rightOuterJoin(usersRDD);
         resultRDD.collect().forEach(System.out::println);
 
