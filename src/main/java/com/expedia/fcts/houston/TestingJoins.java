@@ -6,6 +6,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.Optional;
+import scala.Option;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -40,13 +41,11 @@ public class TestingJoins {
         JavaPairRDD<Integer, String > usersRDD = sc.parallelizePairs(usersRaw);
 
         // Use spark Optional and rightOuterJoin
-        JavaPairRDD<Integer, Tuple2<Optional<Integer>, String>> resultRDD = visitsRDD.rightOuterJoin(usersRDD);
+        JavaPairRDD<Tuple2<Integer, Integer>, Tuple2<Integer, String>> resultRDD = visitsRDD.cartesian(usersRDD);
         resultRDD.collect().forEach(System.out::println);
 
         // Print result names with Optional and orElse for default if not present
-        resultRDD.collect().forEach(tuple -> System.out.println(tuple._2._2 + " has " + tuple._2._1.orElse(0) + " visits"));
-
-
+        resultRDD.collect().forEach(System.out::println);
 
         sc.close();
     }
