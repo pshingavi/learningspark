@@ -40,11 +40,13 @@ public class TestingJoins {
         JavaPairRDD<Integer, String > usersRDD = sc.parallelizePairs(usersRaw);
 
         // Use spark Optional and leftOuterJoin
-        JavaPairRDD<Integer, Tuple2<Integer, Optional<String>>> resultRDD = visitsRDD.leftOuterJoin(usersRDD);
+        JavaPairRDD<Integer, Tuple2<Optional<Integer>, String>> resultRDD = visitsRDD.rightOuterJoin(usersRDD);
         resultRDD.collect().forEach(System.out::println);
 
         // Print result names with Optional and orElse for default if not present
-        resultRDD.collect().forEach(tuple -> System.out.println(tuple._2._2.orElse("NULL").toUpperCase()));
+        resultRDD.collect().forEach(tuple -> System.out.println(tuple._2._2 + " has " + tuple._2._1.orElse(0) + " visits"));
+
+
 
         sc.close();
     }
