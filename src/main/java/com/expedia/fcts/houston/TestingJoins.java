@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.Optional;
 import scala.Tuple2;
 
 import java.util.ArrayList;
@@ -38,8 +39,12 @@ public class TestingJoins {
         JavaPairRDD<Integer, Integer> visitsRDD = sc.parallelizePairs(visitsRaw);
         JavaPairRDD<Integer, String > usersRDD = sc.parallelizePairs(usersRaw);
 
-        JavaPairRDD<Integer, Tuple2<Integer, String>> resultRDD = visitsRDD.join(usersRDD);
+        // Use spark Optional and leftOuterJoin
+        JavaPairRDD<Integer, Tuple2<Integer, Optional<String>>> resultRDD = visitsRDD.leftOuterJoin(usersRDD);
         resultRDD.collect().forEach(System.out::println);
+
+        // Print result names with Optional and orElse for default if not present
+        resultRDD.collect().forEach(tuple -> System.out.println(tuple._2._2.orElse("NULL").toUpperCase()));
 
         sc.close();
     }
