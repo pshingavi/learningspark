@@ -2,13 +2,12 @@ package com.expedia.fcts.houston;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.spark.sql.Column;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.Dataset;
 
-import java.util.Scanner;
+import static org.apache.spark.sql.functions.*;
+
 
 public class MySparkSQL {
 
@@ -29,11 +28,14 @@ public class MySparkSQL {
         // Load data
         Dataset<Row> dataSet = spark.read().option("header", true).csv("src/main/resources/exams/students.csv");
 
-        Column subjectColumn = dataSet.col("subject");
-        Column scoreColumn = dataSet.col("score");
-
-        Dataset<Row> resultDataSet = dataSet.filter(subjectColumn.equalTo("Math")
-        .and(scoreColumn.$greater$eq(50)));
+        // col is imported as a static function from the package: org.apache.spark.sql.functions
+        Dataset<Row> resultDataSet = dataSet
+                .filter(
+                        col("subject").equalTo("Math")
+                                .and(
+                                        col("score").$greater$eq(50)
+                                )
+                );
         resultDataSet.show();
 
         // Using Scanner to interrupt and watch the SparkUI
