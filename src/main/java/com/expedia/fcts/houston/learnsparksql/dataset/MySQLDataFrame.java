@@ -58,5 +58,7 @@ public class MySQLDataFrame {
                 .count()
                 .na().fill(0);
         dataset.show();
+
+        spark.close();
     }
 }
