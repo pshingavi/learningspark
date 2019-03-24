@@ -2,6 +2,7 @@ package com.expedia.fcts.houston;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.spark.api.java.function.FilterFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -27,7 +28,8 @@ public class MySparkSQL {
         // Load data
         Dataset<Row> dataSet = spark.read().option("header", true).csv("src/main/resources/exams/students.csv");
 
-        Dataset<Row> resultSet = dataSet.filter("subject = 'Math' AND score > 50");
+        Dataset<Row> resultSet = dataSet.filter((FilterFunction<Row>) row ->
+                row.getAs("subject").equals("Math"));
         resultSet.show();
 
         // Using Scanner to interrupt and watch the SparkUI
