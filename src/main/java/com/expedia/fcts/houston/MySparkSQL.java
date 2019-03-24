@@ -26,14 +26,18 @@ public class MySparkSQL {
 
         // Load data
         Dataset<Row> dataSet = spark.read().option("header", true).csv("src/main/resources/exams/students.csv");
-        dataSet.show();
+        // Access single row
+        Row firstRow = dataSet.first();
+        //String subject = firstRow.get(2).toString();
+        String subject = firstRow.getAs("subject").toString();
+        System.out.println(subject);
 
-        // .count() is an action on the underlying RDD
-        System.out.println("Total rows: " + dataSet.count());
-
+        Integer year = Integer.parseInt(firstRow.getAs("year"));
+        System.out.println(year);
+        
         // Using Scanner to interrupt and watch the SparkUI
-        Scanner scanner = new Scanner(System.in);
-        scanner.next();
+        /*Scanner scanner = new Scanner(System.in);
+        scanner.next();*/
 
         // Close spark connection
         spark.close();
