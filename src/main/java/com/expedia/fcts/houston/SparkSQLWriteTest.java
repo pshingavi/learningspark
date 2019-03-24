@@ -33,11 +33,11 @@ public class SparkSQLWriteTest {
 
         // Create in-memory list of Row
         List<Row> inMemory = new ArrayList<>();
-        inMemory.add(RowFactory.create("WARN", "16 December 2018"));
-        inMemory.add(RowFactory.create("FATAL", "16 December 2018"));
-        inMemory.add(RowFactory.create("WARN", "16 December 2018"));
-        inMemory.add(RowFactory.create("INFO", "16 December 2018"));
-        inMemory.add(RowFactory.create("FATAL", "16 December 2018"));
+        inMemory.add(RowFactory.create("WARN", "2016-12-31 04:02:11"));
+        inMemory.add(RowFactory.create("FATAL", "2016-12-31 04:02:11"));
+        inMemory.add(RowFactory.create("WARN", "2016-11-12 04:02:11"));
+        inMemory.add(RowFactory.create("INFO", "2016-11-14 04:02:11"));
+        inMemory.add(RowFactory.create("FATAL", "2016-11-11 04:02:11"));
 
         StructField[] fields = new StructField[] {
                 new StructField("level", DataTypes.StringType, false, Metadata.empty()),
@@ -47,7 +47,7 @@ public class SparkSQLWriteTest {
         Dataset<Row> dataset = spark.createDataFrame(inMemory, schema);
 
         dataset.createOrReplaceTempView("logging_table");
-        Dataset<Row> result = spark.sql("select level, collect_list(datetime) from logging_table group by level");
+        Dataset<Row> result = spark.sql("select level, date_format(datetime, 'MMMM') as month from logging_table");
 
         result.show();
         // Using Scanner to interrupt and watch the SparkUI
