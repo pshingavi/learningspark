@@ -26,15 +26,10 @@ public class MySparkSQL {
 
         // Load data
         Dataset<Row> dataSet = spark.read().option("header", true).csv("src/main/resources/exams/students.csv");
-        // Access single row
-        Row firstRow = dataSet.first();
-        //String subject = firstRow.get(2).toString();
-        String subject = firstRow.getAs("subject").toString();
-        System.out.println(subject);
 
-        Integer year = Integer.parseInt(firstRow.getAs("year"));
-        System.out.println(year);
-        
+        Dataset<Row> resultSet = dataSet.filter("subject = 'Math' AND score > 50");
+        resultSet.show();
+
         // Using Scanner to interrupt and watch the SparkUI
         /*Scanner scanner = new Scanner(System.in);
         scanner.next();*/
