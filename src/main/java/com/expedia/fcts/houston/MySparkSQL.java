@@ -38,6 +38,10 @@ public class MySparkSQL {
                 );
         resultDataSet.show();
 
+        dataSet.createOrReplaceTempView("my_students_table");
+        Dataset<Row> resultPlainSQL =  spark.sql("select * from my_students_table where subject = 'French'");
+        resultPlainSQL.show();
+
         // Using Scanner to interrupt and watch the SparkUI
         /*Scanner scanner = new Scanner(System.in);
         scanner.next();*/
