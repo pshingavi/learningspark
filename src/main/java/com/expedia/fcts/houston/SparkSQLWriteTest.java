@@ -47,7 +47,7 @@ public class SparkSQLWriteTest {
         Dataset<Row> dataset = spark.createDataFrame(inMemory, schema);
 
         dataset.createOrReplaceTempView("logging_table");
-        Dataset<Row> result = spark.sql("select level, count(datetime) from logging_table group by level");
+        Dataset<Row> result = spark.sql("select level, collect_list(datetime) from logging_table group by level");
 
         result.show();
         // Using Scanner to interrupt and watch the SparkUI
