@@ -2,17 +2,10 @@ package com.expedia.fcts.houston;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import java.util.Scanner;
 
 
 public class SparkSQLWriteTest {
@@ -31,29 +24,22 @@ public class SparkSQLWriteTest {
                 .config("spark.sql.warehouse.dir", "file:///Users/pshingavi/dev/mysparkleaning/tmp")
                 .getOrCreate();
 
-        // Create in-memory list of Row
-        List<Row> inMemory = new ArrayList<>();
-        inMemory.add(RowFactory.create("WARN", "2016-12-31 04:02:11"));
-        inMemory.add(RowFactory.create("FATAL", "2016-12-31 04:02:11"));
-        inMemory.add(RowFactory.create("WARN", "2016-11-12 04:02:11"));
-        inMemory.add(RowFactory.create("WARN ", "2016-11-14 04:02:11"));
-        inMemory.add(RowFactory.create("FATAL", "2016-11-11 04:02:11"));
+        // Read file from the location
+        Dataset<Row> logRows = spark
+                .read()
+                .option("header", true)
+                .csv("src/main/resources/log/biglog.txt");
 
-        StructField[] fields = new StructField[] {
-                new StructField("level", DataTypes.StringType, false, Metadata.empty()),
-                new StructField("datetime", DataTypes.StringType, false, Metadata.empty())
-        };
-        StructType schema = new StructType(fields);
-        Dataset<Row> dataset = spark.createDataFrame(inMemory, schema);
+        logRows.createOrReplaceTempView("logging_table");
 
-        dataset.createOrReplaceTempView("logging_table");
-        // Add count(1) as group has all columns from the table so compulsory aggregation will happen for say count(1)
-        Dataset<Row> result = spark.sql("select level, date_format(datetime, 'MMMM') as month, count(1) from logging_table group by level, month");
+        Dataset<Row> resultSet = spark.sql("select level, date_format(datetime, 'MMMM') as month, " +
+                "count(1) as total from logging_table group by level, month");
 
-        result.show();
+        resultSet.show(100);
+
         // Using Scanner to interrupt and watch the SparkUI
-        /*Scanner scanner = new Scanner(System.in);
-        scanner.next();*/
+        Scanner scanner = new Scanner(System.in);
+        scanner.next();
 
         // Close spark connection
         spark.close();
