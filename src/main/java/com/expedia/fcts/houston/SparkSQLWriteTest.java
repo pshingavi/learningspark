@@ -36,7 +36,7 @@ public class SparkSQLWriteTest {
         inMemory.add(RowFactory.create("WARN", "2016-12-31 04:02:11"));
         inMemory.add(RowFactory.create("FATAL", "2016-12-31 04:02:11"));
         inMemory.add(RowFactory.create("WARN", "2016-11-12 04:02:11"));
-        inMemory.add(RowFactory.create("INFO", "2016-11-14 04:02:11"));
+        inMemory.add(RowFactory.create("WARN ", "2016-11-14 04:02:11"));
         inMemory.add(RowFactory.create("FATAL", "2016-11-11 04:02:11"));
 
         StructField[] fields = new StructField[] {
@@ -47,7 +47,8 @@ public class SparkSQLWriteTest {
         Dataset<Row> dataset = spark.createDataFrame(inMemory, schema);
 
         dataset.createOrReplaceTempView("logging_table");
-        Dataset<Row> result = spark.sql("select level, date_format(datetime, 'MMMM') as month from logging_table");
+        // Add count(1) as group has all columns from the table so compulsory aggregation will happen for say count(1)
+        Dataset<Row> result = spark.sql("select level, date_format(datetime, 'MMMM') as month, count(1) from logging_table group by level, month");
 
         result.show();
         // Using Scanner to interrupt and watch the SparkUI
