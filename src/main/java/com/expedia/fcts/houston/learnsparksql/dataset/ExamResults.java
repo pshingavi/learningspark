@@ -25,15 +25,28 @@ public class ExamResults {
                 .config("spark.sql.warehouse.dir", "file:///Users/pshingavi/dev/mysparkleaning/tmp")
                 .getOrCreate();
 
+        // Register UDF
+        spark
+                .udf()
+                // UDF can be lambda function or can be more complex implemented in another class
+                .register("hasPassed", (String grade, String subject) -> {
+                    if (subject.equals("Biology")) {
+                        return grade.equals("A+");
+                    }
+                    return grade.equals("A+") || grade.equals("B");
+                }, DataTypes.BooleanType);
+
         Dataset<Row> dataset = spark.read()
                 .option("header", true) // Returns DataFrameReader, inferSchema can be expensive since it needs extra pass on the data
                 .csv("src/main/resources/exams/students.csv");
 
-        // User defined functions to add column using 'lit' to existing DataFrame - Inline
-        dataset = dataset.withColumn("pass_dummy", lit("YES"));   // lit can be dynamically built
+        // User defined functions using UDF
+        dataset = dataset.withColumn("pass", callUDF(
+                "hasPassed",
+                col("grade"),
+                col("subject")
+        ));
 
-        // Use condition to fill the value
-        dataset = dataset.withColumn("pass", lit( col("grade").equals("A+") ));
         dataset.show();
         spark.close();
     }
