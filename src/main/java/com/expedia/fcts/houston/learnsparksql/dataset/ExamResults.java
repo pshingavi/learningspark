@@ -29,16 +29,11 @@ public class ExamResults {
                 .option("header", true) // Returns DataFrameReader, inferSchema can be expensive since it needs extra pass on the data
                 .csv("src/main/resources/exams/students.csv");
 
-        // More aggregation functions
-        dataset = dataset
-                .groupBy(col("subject"))
-                //.max(col("score").cast(DataTypes.IntegerType));   This does not work directly calling max, need only string column name and we need cast on the column score
-                .agg(
-                        max(col("score").cast(DataTypes.IntegerType)).as("max_score"),  // cast in 'agg' can be ignored
-                        min(col("score").cast(DataTypes.IntegerType)).as("min_score")
-                );
+        // User defined functions to add column using 'lit' to existing DataFrame - Inline
+        dataset = dataset.withColumn("pass_dummy", lit("YES"));   // lit can be dynamically built
 
-
+        // Use condition to fill the value
+        dataset = dataset.withColumn("pass", lit( col("grade").equals("A+") ));
         dataset.show();
         spark.close();
     }
