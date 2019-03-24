@@ -33,7 +33,12 @@ public class SparkSQLWriteTest {
         logRows.createOrReplaceTempView("logging_table");
 
         Dataset<Row> resultSet = spark.sql("select level, date_format(datetime, 'MMMM') as month, " +
-                "count(1) as total from logging_table group by level, month");
+                // Apply aggregate function on non group attribute. Use first() here
+                // Case value as int else results will be inconsistent and sorted by string value
+                "cast(first(date_format(datetime, 'M')) as int) as monthnum, " +
+                //" order by month" - This will result in inconsistent since these are alphabets, so added monthnum
+                "count(1) as total from logging_table group by level, month order by monthnum"
+        );
 
         resultSet.show(100);
 
