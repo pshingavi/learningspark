@@ -8,6 +8,10 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static org.apache.spark.sql.functions.*;
 
 public class MySQLDataFrame {
@@ -45,20 +49,14 @@ public class MySQLDataFrame {
                 date_format(col("datetime"), "M").as("monthnum").cast(DataTypes.IntegerType)
         );
 
-        /*
-        *   +-----+---------+-----+
-            |level|    month|count|
-            +-----+---------+-----+
-            | WARN|     June| 8191|
-            | INFO|     June|29143|
-
-        * */
-        dataset = dataset.groupBy(
-                col("level"),
-                col("month"),
-                col("monthnum")
-        ).count();
-        dataset = dataset.orderBy(col("monthnum")).drop(col("monthnum"));
+        Object[] months = new Object[] {"January", "February", "March", "April", "May", "June", "July", "August",
+                "September", "October", "November", "December", "Dummy"};
+        // Start grouping what your row column will be
+        dataset = dataset
+                .groupBy(col("level"))
+                .pivot("month", Arrays.asList(months))
+                .count()
+                .na().fill(0);
         dataset.show();
     }
 }
