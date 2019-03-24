@@ -10,12 +10,9 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import scala.xml.MetaData;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.apache.spark.sql.functions.*;
 
 
 public class SparkSQLWriteTest {
@@ -49,7 +46,10 @@ public class SparkSQLWriteTest {
         StructType schema = new StructType(fields);
         Dataset<Row> dataset = spark.createDataFrame(inMemory, schema);
 
-        dataset.show();
+        dataset.createOrReplaceTempView("logging_table");
+        Dataset<Row> result = spark.sql("select level, count(datetime) from logging_table group by level");
+
+        result.show();
         // Using Scanner to interrupt and watch the SparkUI
         /*Scanner scanner = new Scanner(System.in);
         scanner.next();*/
