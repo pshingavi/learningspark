@@ -44,6 +44,13 @@
             <version>2.4.0</version>
         </dependency>
 
+        <!-- For Structured streaming -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
