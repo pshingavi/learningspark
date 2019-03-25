@@ -35,7 +35,7 @@ public class KafkaStreaming {
                 .setAppName("myStreamingApp");
 
         // Set JavaStreamingContext
-        JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.seconds(10));
+        JavaStreamingContext sc = new JavaStreamingContext(conf, Durations.seconds(5));
 
         // sc does not have direct kafka connector - Look into spark streaming + kafka integration
         // https://spark.apache.org/docs/latest/streaming-kafka-integration.html
@@ -58,7 +58,8 @@ public class KafkaStreaming {
         // Create JavaPairDStrea<String, Value> (course, duration_it_was_watched_dummy)
         JavaPairDStream<Long, String> results = stream
                 .mapToPair(kafkaRecord -> new Tuple2<>(kafkaRecord.value(), 5L))
-                .reduceByKey((x, y) -> x + y)
+                // Windowing to keep history, slide interval to print at delayed interval although computation still happens at the batch interval
+                .reduceByKeyAndWindow((x, y) -> x + y, Durations.minutes(5), Durations.seconds(30))
                 .mapToPair(newDStream -> newDStream.swap())
                 //.sortByKey()  // Not provided by DStream. So get the underlying rdd and perform operation on that rdd
                 .transformToPair(rdd -> rdd.sortByKey(false));
