@@ -35,7 +35,8 @@ public class MyStructuredStreaming {
 
         // cast (value as string) required for deserializing value from the ConsumerRecord
         // Cannot use the key/value.deserializer option in the spark-kafka connector option
-        Dataset<Row> results = spark.sql("select cast (value as string) as course_name, sum(5) from viewing_figures group by course_name");
+        Dataset<Row> results = spark.sql("select cast (value as string) as course_name, sum(5) as watched_duration" +
+                " from viewing_figures group by course_name sort by watched_duration desc");
         // Default windowing is done by Structured streaming and pushes data to unbounded table in memory
         // Table size grows over time but Structured streaming makes intelligent decision of how and when to discard old data (See outputMode)
         StreamingQuery streamingQuery = results
