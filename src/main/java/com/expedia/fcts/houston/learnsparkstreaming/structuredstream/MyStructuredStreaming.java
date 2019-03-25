@@ -34,11 +34,14 @@ public class MyStructuredStreaming {
         df.createOrReplaceTempView("viewing_figures");
 
         // cast (value as string) required for deserializing value from the ConsumerRecord
-        Dataset<Row> results = spark.sql("select cast (value as string) from viewing_figures");
+        // Cannot use the key/value.deserializer option in the spark-kafka connector option
+        Dataset<Row> results = spark.sql("select cast (value as string) as course_name, sum(5) from viewing_figures group by course_name");
+        // Default windowing is done by Structured streaming and pushes data to unbounded table in memory
+        // Table size grows over time but Structured streaming makes intelligent decision of how and when to discard old data (See outputMode)
         StreamingQuery streamingQuery = results
                 .writeStream()
                 .format("console")
-                .outputMode(OutputMode.Append())
+                .outputMode(OutputMode.Complete())
                 .start();
 
         streamingQuery.awaitTermination();
