@@ -30,7 +30,8 @@ public class MyDStream {
         JavaDStream<String> result = resultDStream.map(item -> item);
         result.map(rawMessage -> rawMessage.split(",")[0])
                 .mapToPair(level -> new Tuple2<>(level, 1))
-                .reduceByKey((x, y) -> x+y)
+                // AndWindow maintains the last state of the reduceByKey Operation and updates the old result until window time
+                .reduceByKeyAndWindow((x, y) -> x+y, Durations.minutes(2))
                 .print();
 
         sc.start(); // Start streaming
