@@ -8,10 +8,12 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
+import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
+import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +55,14 @@ public class KafkaStreaming {
                 ConsumerStrategies.Subscribe(topics, params)
         );
 
-        JavaDStream<String> results = stream.map(item -> item.value());
+        // Create JavaPairDStrea<String, Value> (course, duration_it_was_watched_dummy)
+        JavaPairDStream<Long, String> results = stream
+                .mapToPair(kafkaRecord -> new Tuple2<>(kafkaRecord.value(), 5L))
+                .reduceByKey((x, y) -> x + y)
+                .mapToPair(newDStream -> newDStream.swap())
+                //.sortByKey()  // Not provided by DStream. So get the underlying rdd and perform operation on that rdd
+                .transformToPair(rdd -> rdd.sortByKey(false));
+
         results.print();
 
         sc.start();
