@@ -1,16 +1,13 @@
-package com.expedia.fcts.houston.learnsparksql.dataset;
+package com.expedia.fcts.houston.learnsparksql.dataframeapi;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.spark.sql.functions.*;
 

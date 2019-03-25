@@ -1,4 +1,4 @@
-package com.expedia.fcts.houston.learnsparksql.dataset;
+package com.expedia.fcts.houston.learnsparksql;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
